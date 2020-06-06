@@ -1,0 +1,386 @@
+#include <iostream>
+#include <vector>
+#include<queue>
+using namespace std;
+
+class Edge
+{
+public:
+    int v = 0;
+    int w = 0;
+
+    Edge(int v, int w)
+    {
+        this->v = v;
+        this->w = w;
+    }
+};
+
+int n = 7;
+vector<vector<Edge *>> graph(n, vector<Edge *>());
+
+void display()
+{
+    for (int i = 0; i < graph.size(); i++)
+    {
+        cout << i << " -> ";
+        for (Edge *e : graph[i])
+        {
+            cout << "(" << e->v << ", " << e->w << ") ";
+        }
+        cout << endl;
+    }
+}
+
+void addEdge(int u, int v, int w)
+{
+    if (u < 0 || v < 0 || u >= n || v >= n)
+        return;
+
+    graph[u].push_back(new Edge(v, w));
+    graph[v].push_back(new Edge(u, w));
+}
+
+void constructGraph()
+{
+    addEdge(0, 1, 40);
+    addEdge(0, 3, 10);
+    addEdge(1, 2, 10);
+    addEdge(2, 3, 40);
+    addEdge(2, 5, 40);
+    addEdge(0, 6, 8);
+    addEdge(3, 4, 2);
+    addEdge(4, 5, 2);
+    addEdge(4, 6, 3);
+    addEdge(5, 6, 8);
+
+    display();
+    cout << endl;
+}
+
+void removeEdge(int u, int v)
+{
+    int i = 0;
+    while (i < graph[u].size())
+    {
+        Edge *e =graph[u][i];
+        if (e->v == v)
+        {
+            break;
+        }
+        i++;
+    }
+
+    int j = 0;
+    while (j < graph[v].size())
+    {
+        Edge *e = graph[v][j];
+        if (e->v == u)
+        {
+            break;
+        }
+        j++;
+    }
+
+    graph[u].erase(graph[u].begin() + i);
+    graph[v].erase(graph[v].begin() + j);
+}
+
+void removeVtx(int u)
+{
+    while (graph[u].size() != 0)
+    {
+        Edge *e = graph[u][graph[u].size() - 1];
+        removeEdge(u, e->v);
+    }
+}
+void haspath(int src,int dest,vector<bool>&vis,string psf){
+    cout<<psf<<endl;
+    vis[src]=true;
+    for(Edge* e:graph[src]){
+        if(vis[e->v]){
+            haspath(e->v,dest,vis,psf+to_string(e->v));
+        }
+    }
+}
+int allpath(int src,int dest,vector<bool>& vis,int wsf,string psf){
+    if(src==dest){
+        cout<<psf+" @ "+to_string(wsf)<<endl;
+        return 1;
+    }
+    int count=0;
+    vis[src]=true;
+    for(Edge*e:graph[src]){
+        if(!vis[e->v]){
+            count+=allpath(e->v,dest,vis,wsf+(e->w),psf+to_string(e->v));
+        }
+    }
+    vis[src]=false;
+    return count;
+}
+int swsf=1e8;
+string spsf="";
+
+int lwsf=-1;
+string lpsf="";
+
+void allsolutions(int src,int dest,vector<bool>&vis,int wsf,string psf){
+    if(src==dest)
+    {
+        if(wsf<swsf)
+        {
+            swsf=wsf;
+            spsf=psf;
+        }
+        if(wsf>lwsf)
+        {
+            lwsf=wsf;
+            lpsf=psf;
+        }
+    }
+    vis[src]=true;
+    for(Edge*e:graph[src])
+    {
+        if(!vis[e->v])
+        allsolutions(e->v,dest,vis,wsf+e->w,psf+to_string(src)+"->");
+    }
+    vis[src]=false;
+}
+void dfs(int src,vector<bool>&vis)
+{
+    vis[src]=true;
+    for(Edge*e:graph[src]){
+        if(!vis[e->v])
+        dfs(e->v,vis);
+    }
+}
+void getconnectedcomponents()
+{
+    vector<bool>vis(n,false);
+    int compo=0;
+    for(int i=0;i<n;i++){
+        if(!vis[i]){
+            compo++;
+            dfs(i,vis);
+        }
+    }
+    cout<<compo<<endl;
+}
+void bfs(int src){
+    queue<int> que;
+    vector<bool>vis(n,false);
+    que.push(src);
+    que.push(-1);
+    int cycle=0;
+    int level=0;
+    //int que=
+    int dest=6;
+    bool isdest=false;
+    while(que.size()!=1){
+        int rvtx=que.front();
+        que.pop();
+        
+        if(vis[rvtx]){
+            cout<<"cycle:"<<++cycle<<" @ "<<rvtx<<endl;
+            continue; 
+        }
+        if(rvtx==dest && !isdest )
+        {
+            cout<<"goal "<<level<<" @ "<<endl;
+            isdest=true;
+        }
+        vis[rvtx]=true;
+        for(Edge*e:graph[rvtx]){
+            if(!vis[e->v])
+            que.push(e->v);
+        }
+        if(que.front()==-1){
+            level++;
+            que.pop();
+            que.push(-1);
+            continue;
+        }
+        
+    }
+}
+    void bfs2(int src){
+        queue<int> que;
+        vector<bool> vis(5,false);
+        que.push(src);
+        bool isdest=false;
+        int cycle=0;
+        int level=0;
+        int dest=6;
+       // int rvtx=0;
+        while(que.size()!=0){
+            int s=que.size();
+            while(s-->=0){
+                int rvtx=que.front();
+                que.pop();
+                if(vis[rvtx]){
+                    cout<<"cycle:"<<++cycle<<" @ "<<rvtx<<endl;
+                    continue; 
+                  }
+            
+        if(rvtx==dest && !isdest )
+        {
+            cout<<"goal"<<level<<" @ "<<endl;
+            isdest=true;
+        }
+        vis[rvtx]=true;
+        for(Edge*e:graph[rvtx]){
+            if(!vis[e->v])
+            que.push(e->v);
+        }
+    }  
+        level++;       
+    }
+}
+int HamiltonianPath(int vtx,int oscr,int vtxcount,vector<bool>& vis,string ans){
+    if(vtxcount==graph.size()-1)
+    {
+        bool flag=false;
+        for(Edge *e:graph[vtx])
+        {
+            if(e->v==oscr)
+            {
+                cout<<"cycle"+ans + to_string(vtx)<<endl;
+                flag=true;
+            }
+        }
+        if(!flag)
+        cout<<"path"+ans+to_string(vtx)<<endl;
+        return 1;
+    }
+    int count=0;
+    vis[vtx]=true;
+    for(Edge *e:graph[vtx])
+    {
+        if(!vis[e->v])
+        {
+            count+=HamiltonianPath(e->v,oscr,vtxcount+1,vis,ans+to_string(vtx)+"");
+            
+        }
+    }
+    vis[vtx]=false;
+    return count;
+}
+bool isBipartite_(int i, vector<int> &vis)
+{
+    queue<pair<int, int>> que;
+    bool flag = true;
+    que.push({i, 0});
+
+    while (que.size() != 0)
+    {
+        pair<int, int> rvtx = que.front();
+        que.pop();
+
+        if (vis[rvtx.first] != -1)
+        {
+            if (vis[rvtx.first] != rvtx.second)
+            {
+                cout << "conflict: " << endl;
+                flag = false;
+            }
+            continue;
+        }
+
+        vis[rvtx.first] = rvtx.second;
+        for (Edge *e : graph[rvtx.first])
+        {
+            if (vis[e->v] == -1)
+                que.push({e->v, (rvtx.second + 1) % 2});
+        }
+    }
+
+    return flag;
+}
+
+void isBipartite()
+{
+    vector<int> vis(graph.size(), -1);
+    int count = 0;
+
+    for (int i = 0; i < graph.size(); i++)
+    {
+        if (vis[i] == -1)
+        {
+
+            cout << count << " " << (boolalpha) << isBipartite_(i, vis) << endl;
+            count++;
+        }
+    }
+}
+
+void topologicalSort_(int src, vector<bool> &vis, vector<int> &stack)
+{
+    vis[src] = true;
+    for (Edge *e : graph[src]){
+        if (!vis[e->v])
+            topologicalSort_(e->v, vis, stack);
+    }
+
+    stack.push_back(src);
+}
+
+void topologicalSort()
+{
+    vector<bool> vis(graph.size(), false);
+    vector<int> stack;
+
+    for (int i = 0; i < n; i++)
+    {
+        if (!vis[i])
+            topologicalSort_(i, vis, stack);
+    }
+
+    while (stack.size() != 0)
+    {
+        cout << stack.back() << " ";
+        stack.pop_back();
+    }
+}
+bool topologicalSort_(int src,vector<bool> &vis,vector<bool> &cycleDetection){
+    vis[src]=true;
+    vector<int> stack;
+    cycleDetection[src]=true;
+    bool res=false;
+    for(Edge *e:graph[src])
+    {
+        if(!vis[e->v])
+        topologicalSort_(e->v,vis, cycleDetection);
+        else if(cycleDetection[e->v])
+        return true;
+
+        stack.push_back(src);
+        cycleDetection[src]=false;
+        return res;    
+    }
+
+
+}
+void solve()
+{
+    constructGraph();
+    //    removeEdge(3,4);
+    vector<bool> vis(n, false);
+    // cout <<haspath(0,6,vis,to_string(0) + "")<<endl;
+    //cout << allpath(0, 6, vis, 0, to_string(0) + "") << endl;
+    // allsolutions(0,6,vis,0,"");
+    // cout<<spsf<<" @ "<<swsf<<endl;
+    // cout<<lpsf<<" @ "<<lwsf<<endl;
+    // cout<<getconnectedcomponents<<endl;
+   //bfs(0);
+//    bfs(0);
+//cout<<HamiltonianPath(0,0,0,vis,"")<<endl;
+    // isBipartite();
+    //topologicalSort();
+    topologicalSort_(0,vis,0);
+}
+
+int main()
+{
+    solve();
+    return 0;
+}
